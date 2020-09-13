@@ -11,10 +11,10 @@ try:
 except:
     pyqt5 = False
 if pyqt5:
-    from PyQt5.QtCore import* #QTimer, QPoint, pyqtSignal,pyqtSlot
-    from PyQt5.QtWidgets import* #QApplication, QMainWindow, QTextEdit, QLabel, QTabWidget,QPushButton
-    from PyQt5.QtWidgets import * #QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout,QSizePolicy,QSpacerItem
-    from PyQt5.QtGui import* # QFont, QPainter, QImage, QTextCursor,QIcon
+    from PyQt5.QtCore import QTimer, QPoint, pyqtSignal,pyqtSlot
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QLabel, QTabWidget,QPushButton
+    from PyQt5.QtWidgets import QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout,QSizePolicy,QSpacerItem
+    from PyQt5.QtGui import QFont, QPainter, QImage, QTextCursor,QIcon
 else:
     from PyQt4.QtCore import Qt, pyqtSignal, QTimer, QPoint
     from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit, QLabel
@@ -149,8 +149,6 @@ class MyWindow(QMainWindow):
                 #Labels
         self.setco2=QLabel("mmHg")
         self.co2.addWidget(self.setco2)
-        self.setco2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-        self.setco2.setAlignment(Qt.AlignCenter)
 
                 # CO2(-)
         self.btnco2m= QPushButton('CO2-')
@@ -169,8 +167,6 @@ class MyWindow(QMainWindow):
         #spacers
         self.verticalSpacer = QSpacerItem(150, 100,QSizePolicy.Expanding)
         self.verticalSpacerb = QSpacerItem(70, 50,QSizePolicy.Expanding)
-        #sizes
-        size = QSize(60, 60)
         # Camera
         self.btnc= QPushButton('Capture')
         self.btnc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
@@ -178,8 +174,6 @@ class MyWindow(QMainWindow):
         self.buttons.addWidget(self.btnc)
         self.buttons.addSpacerItem(self.verticalSpacer)
         self.btnc.setIcon(QIcon('camera.png'))
-        #self.btnc.setStyleSheet("border-radius : 50;")
-        self.btnc.setIconSize(size)
 
 
         #Video
@@ -188,14 +182,11 @@ class MyWindow(QMainWindow):
         self.Videos.layout.addWidget(self.btnr)
         self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         self.btnr.setIcon(QIcon('video.png'))
-        self.btnr.setIconSize(size)
         
         self.btns= QPushButton('Stop')
         self.btns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.Videos.layout.addWidget(self.btns)
         self.btns.setIcon(QIcon('stop.png'))
-        self.btns.setIconSize(size)
-        self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         
         
    
@@ -262,58 +253,15 @@ if __name__ == '__main__':
         print("Invalid camera number '%s'" % sys.argv[1])
     else:
         style = """
-
-            QPushButton {
-            color: #333;
-            border: 2px solid #555;
-            border-radius: 40px;
-            border-style: outset;
-            background: qradialgradient(
-            cx: 0.3, cy: -0.4, fx: 0.3, fy: -0.4,
-            radius: 1.35, stop: 0 #fff, stop: 1 #888
-            );
-            padding: 5px;
-            }
-
-            QPushButton:hover {
-            background: qradialgradient(
-            cx: 0.3, cy: -0.4, fx: 0.3, fy: -0.4,
-            radius: 1.35, stop: 0 #fff, stop: 1 #bbb
-            );
-            }
-
-            QPushButton:pressed {
-            border-style: inset;
-            background: qradialgradient(
-            cx: 0.4, cy: -0.1, fx: 0.4, fy: -0.1,
-            radius: 1.35, stop: 0 #fff, stop: 1 #ddd
-            );
-            }
-
-
         QWidget
          {
          background:#0e3360;
          
-         color:white;
-         font: bold large "FreeMono";
-         font-size:30px;
          }
-        QLabel::setCo2
-        {
-           text-align: centre;
-        }
+       
         QLabel
         {
         color:white;
-        border: 1px solid white;
-        
-        border: radius:4px;
-        }
-        QPushButton
-        {
-        border-radius : 50;  
-        border : 2px solid black
         }
                
         """
