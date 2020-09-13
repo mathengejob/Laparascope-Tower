@@ -13,7 +13,7 @@ except:
 if pyqt5:
     from PyQt5.QtCore import QTimer, QPoint, pyqtSignal,pyqtSlot
     from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QLabel, QTabWidget,QPushButton
-    from PyQt5.QtWidgets import QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout
+    from PyQt5.QtWidgets import QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout,QSizePolicy,QSpacerItem
     from PyQt5.QtGui import QFont, QPainter, QImage, QTextCursor,QIcon
 else:
     from PyQt4.QtCore import Qt, pyqtSignal, QTimer, QPoint
@@ -103,6 +103,7 @@ class MyWindow(QMainWindow):
         self.control = QVBoxLayout()
         self.textboxs= QHBoxLayout()
         self.co2= QVBoxLayout()
+        self.buttons =QVBoxLayout()
         self.disp = ImageWidget(self)
         self.controls= QTabWidget()
       
@@ -116,6 +117,7 @@ class MyWindow(QMainWindow):
         self.vlayout.addWidget(self.textbox)
         self.central.setLayout(self.vlayout)
         self.setCentralWidget(self.central)
+        self.central.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.displays.addLayout(self.control_side)
         self.control_side.addWidget(self.controls)
         self.control_side.addLayout(self.control)
@@ -123,6 +125,7 @@ class MyWindow(QMainWindow):
  
  
         #widget
+
         self.Pictures=QWidget()
         self.Pictures.layout=QVBoxLayout()
         self.Pictures.setLayout(self.Pictures.layout)
@@ -139,7 +142,9 @@ class MyWindow(QMainWindow):
         self.control.addLayout(self.co2)      
                 # C02(+)
         self.btnco2p= QPushButton('CO2+')
+        self.btnco2p.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.co2.addWidget(self.btnco2p)
+        
         
                 #Labels
         self.setco2=QLabel("mmHg")
@@ -148,6 +153,7 @@ class MyWindow(QMainWindow):
                 # CO2(-)
         self.btnco2m= QPushButton('CO2-')
         self.co2.addWidget(self.btnco2m)
+        self.btnco2m.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
 
        
@@ -158,19 +164,31 @@ class MyWindow(QMainWindow):
         self.fileMenu = self.mainMenu.addMenu('&File')
         self.fileMenu.addAction(exitAction)
         
+        #spacers
+        self.verticalSpacer = QSpacerItem(150, 100,QSizePolicy.Expanding)
+        self.verticalSpacerb = QSpacerItem(70, 50,QSizePolicy.Expanding)
         # Camera
         self.btnc= QPushButton('Capture')
-        self.Pictures.layout.addWidget(self.btnc)
-        self.btnc.setIcon(QIcon('camera.png')) 
+        self.btnc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.Pictures.layout.addLayout(self.buttons)
+        self.buttons.addWidget(self.btnc)
+        self.buttons.addSpacerItem(self.verticalSpacer)
+        self.btnc.setIcon(QIcon('camera.png'))
+
 
         #Video
         self.btnr= QPushButton('Record')
+        self.btnr.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.Videos.layout.addWidget(self.btnr)
+        self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         self.btnr.setIcon(QIcon('video.png'))
         
         self.btns= QPushButton('Stop')
+        self.btns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.Videos.layout.addWidget(self.btns)
         self.btns.setIcon(QIcon('stop.png'))
+        
+        
    
     # Start image capture & display
     def start(self):
@@ -234,9 +252,24 @@ if __name__ == '__main__':
     if camera_num < 1:
         print("Invalid camera number '%s'" % sys.argv[1])
     else:
+        style = """
+        QWidget
+         {
+         background:#0e3360;
+         
+         }
+       
+        QLabel
+        {
+        color:white;
+        }
+               
+        """
+        
         app = QApplication(sys.argv)
+        app.setStyleSheet(style)
         win = MyWindow()
-        win.show()
+        win.showFullScreen()
         win.setWindowTitle(VERSION)
         win.start()
         sys.exit(app.exec_())
