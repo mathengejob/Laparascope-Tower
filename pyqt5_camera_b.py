@@ -11,10 +11,10 @@ try:
 except:
     pyqt5 = False
 if pyqt5:
-    from PyQt5.QtCore import QTimer, QPoint, pyqtSignal,pyqtSlot
-    from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QLabel, QTabWidget,QPushButton
-    from PyQt5.QtWidgets import QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout,QSizePolicy,QSpacerItem
-    from PyQt5.QtGui import QFont, QPainter, QImage, QTextCursor,QIcon
+    from PyQt5.QtCore import* #QTimer, QPoint, pyqtSignal,pyqtSlot
+    from PyQt5.QtWidgets import* #QApplication, QMainWindow, QTextEdit, QLabel, QTabWidget,QPushButton
+    from PyQt5.QtWidgets import * #QWidget, QAction, QVBoxLayout, QHBoxLayout,QGridLayout,QSizePolicy,QSpacerItem
+    from PyQt5.QtGui import* # QFont, QPainter, QImage, QTextCursor,QIcon
 else:
     from PyQt4.QtCore import Qt, pyqtSignal, QTimer, QPoint
     from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit, QLabel
@@ -25,7 +25,8 @@ try:
 except:
     import queue as Queue
 
-IMG_SIZE    = 1280,720          # 640,480 or 1280,720 or 1920,1080
+from PyQt5 import QtCore, QtGui, QtWidgets
+IMG_SIZE    = 1280,720  # 640,480 or 1280,720 or 1920,1080
 IMG_FORMAT  = QImage.Format_RGB888
 DISP_SCALE  = 1
 # Scaling factor for display image
@@ -38,6 +39,7 @@ camera_num  = 1                 # Default camera (first in list)
 image_queue = Queue.Queue()     # Queue to hold images
 capturing   = True              # Flag to indicate capturing
 
+PickName =1
 # Grab images from the camera (separate thread)
 def grab_images(cam_num, queue):
     cap = cv2.VideoCapture(cam_num-1 + CAP_API)
@@ -55,11 +57,17 @@ def grab_images(cam_num, queue):
                 queue.put(image)
             else:
                 time.sleep(DISP_MSEC / 1000.0)
+        
         else:
             print("Error: can't grab camera image")
             break
     cap.release()
 
+#take photo
+def snap (QWidget):
+    cv2.imwrite(filename='saved_img.jpg', img=frame)
+    webcam.release()
+    
 # Image widget
 class ImageWidget(QWidget):
     def __init__(self, parent=None):
@@ -77,11 +85,52 @@ class ImageWidget(QWidget):
         if self.image:
             qp.drawImage(QPoint(0, 0), self.image)
         qp.end()
+        
+        
+        #Login form
+class LoginForm(QWidget):
+    def __init__(self,parent=None):
+        super().__init__()
+        self.setWindowTitle('Patient Form')
+        self.resize(400, 250)
+        
 
+        layout = QVBoxLayout()
+             
+ 
+        self.lineEdit_username = QLineEdit()
+        self.lineEdit_username.setPlaceholderText('Please enter Patient name')
+        self.lineEdit_username.setGeometry(QtCore.QRect(50, 150, 300, 30))
+        layout.addWidget(self.lineEdit_username)
+
+
+
+        self.button_login = QPushButton("Accept")
+        self.button_login.clicked.connect(self.check_password)
+        self.button_login.clicked.connect(lambda:self.close())
+        layout.addWidget(self.button_login)
+        self.button_login.setGeometry(QtCore.QRect(160, 250, 75, 30))
+
+        self.setLayout(layout)
+       
+        
+
+    def check_password(self):
+  
+             #
+        global PatientName
+        PatientName= self.lineEdit_username.text()
+        PickName=2
+
+                
+          #app.quit()
+
+    
 # Main window
 class MyWindow(QMainWindow):
     text_update = pyqtSignal(str)
-
+    
+   
     # Create main window
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -94,7 +143,12 @@ class MyWindow(QMainWindow):
         self.text_update.connect(self.append_text)
         sys.stdout = self
         print("Camera number %u" % camera_num)
-        print("Image size %u x %u" % IMG_SIZE)
+        
+        #PickName.valueChanged.connect(print(PickName))
+            #print(PickName)
+
+
+
         if DISP_SCALE > 1:
             print("Display scale %u:1" % DISP_SCALE)
 
@@ -144,12 +198,12 @@ class MyWindow(QMainWindow):
         self.btnco2p= QPushButton('CO2+')
         self.btnco2p.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.co2.addWidget(self.btnco2p)
-        
-        
                 #Labels
         self.setco2=QLabel("mmHg")
         self.co2.addWidget(self.setco2)
-
+        self.setco2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.setco2.setAlignment(Qt.AlignCenter)
+   
                 # CO2(-)
         self.btnco2m= QPushButton('CO2-')
         self.co2.addWidget(self.btnco2m)
@@ -167,6 +221,8 @@ class MyWindow(QMainWindow):
         #spacers
         self.verticalSpacer = QSpacerItem(150, 100,QSizePolicy.Expanding)
         self.verticalSpacerb = QSpacerItem(70, 50,QSizePolicy.Expanding)
+        #sizes
+        size = QSize(60, 60)
         # Camera
         self.btnc= QPushButton('Capture')
         self.btnc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
@@ -174,6 +230,8 @@ class MyWindow(QMainWindow):
         self.buttons.addWidget(self.btnc)
         self.buttons.addSpacerItem(self.verticalSpacer)
         self.btnc.setIcon(QIcon('camera.png'))
+        #self.btnc.setStyleSheet("border-radius : 50;")
+        self.btnc.setIconSize(size)
 
 
         #Video
@@ -182,12 +240,16 @@ class MyWindow(QMainWindow):
         self.Videos.layout.addWidget(self.btnr)
         self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         self.btnr.setIcon(QIcon('video.png'))
+        self.btnr.setIconSize(size)
         
         self.btns= QPushButton('Stop')
         self.btns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.Videos.layout.addWidget(self.btns)
         self.btns.setIcon(QIcon('stop.png'))
+        self.btns.setIconSize(size)
+        self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         
+        self.btnco2p.clicked.connect(self.DisplayPatient)
         
    
     # Start image capture & display
@@ -207,8 +269,14 @@ class MyWindow(QMainWindow):
             if image is not None and len(image) > 0:
                 img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 self.display_image(img, display, scale)
+    def DisplayPatient(self):
+       # self.setco2.setText(B.PatientName)
+        print("Patient Name:", PatientName)
+        self.setco2.setText("sds")
+  
 
     # Display an image, reduce size if required
+    
     def display_image(self, img, display, scale=1):
         disp_size = img.shape[1]//scale, img.shape[0]//scale
         disp_bpl = disp_size[0] * 3
@@ -253,25 +321,114 @@ if __name__ == '__main__':
         print("Invalid camera number '%s'" % sys.argv[1])
     else:
         style = """
+
+            QPushButton {
+            color: #333;
+            border: 2px solid #555;
+            border-radius: 40px;
+            border-style: outset;
+            background: qradialgradient(
+            cx: 0.3, cy: -0.4, fx: 0.3, fy: -0.4,
+            radius: 1.35, stop: 0 #fff, stop: 1 #888
+            );
+            padding: 5px;
+            }
+
+            QPushButton:hover {
+            background: qradialgradient(
+            cx: 0.3, cy: -0.4, fx: 0.3, fy: -0.4,
+            radius: 1.35, stop: 0 #fff, stop: 1 #bbb
+            );
+            }
+
+            QPushButton:pressed {
+            border-style: inset;
+            background: qradialgradient(
+            cx: 0.4, cy: -0.1, fx: 0.4, fy: -0.1,
+            radius: 1.35, stop: 0 #fff, stop: 1 #ddd
+            );
+            }
+
+
         QWidget
          {
          background:#0e3360;
          
+         color:white;
+         font: bold large "FreeMono";
+         font-size:30px;
          }
-       
+        QLabel::setCo2
+        {
+           text-align: centre;
+        }
         QLabel
         {
         color:white;
+        border: 1px solid white;
+        
+        border: radius:4px;
+        }
+        QPushButton::
+        {
+        border-radius : 50;  
+        border : 2px solid black
         }
                
         """
-        
+        import sys
         app = QApplication(sys.argv)
         app.setStyleSheet(style)
+        Form2 = LoginForm()
+        Form2.setStyleSheet("#Qwidget{\n"
+"background-color:white\n"
+"\n"
+"}\n"
+"\n"
+"QLineEdit{\n"
+"border:none;\n"
+"border-bottom:1px solid rgba(0,0,0,.2);\n"
+"background-color:transparent;\n"
+
+"         font-size:22px;"
+"}\n"
+"\n"
+"QLineEdit:hover{\n"
+"border:none;\n"
+"border-bottom:1px solid black;\n"
+"background-color:transparent;\n"
+"}\n"
+"\n"
+"QFrame{\n"
+"background-color:transparent;\n"
+"}\n"
+"\n"
+"\n"
+"\n"
+""
+"QPushButton{\n"
+"border-radius:10px;\n"
+"background-color:cadetblue;\n"
+"color:white;\n"
+"font-size:25px;"
+"}\n"
+"\n"
+"QPushButton:hover{\n"
+"border-radius:10px;\n"
+"background-color:grey;\n"
+"color:black;\n"
+"border:1px solid black;\n"
+"\n"
+"}"                        
+)
+        
+         #.start()
+        #Form2.show()
         win = MyWindow()
-        win.showFullScreen()
+        win.show()
         win.setWindowTitle(VERSION)
         win.start()
+        Form2.show()
         sys.exit(app.exec_())
 
 #EOF
