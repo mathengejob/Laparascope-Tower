@@ -107,6 +107,7 @@ class LoginForm(QWidget):
 
         self.button_login = QPushButton("Accept")
         self.button_login.clicked.connect(self.check_password)
+        self.button_login.clicked.connect(MyWindow.DisplayPatient)
         self.button_login.clicked.connect(lambda:self.close())
         layout.addWidget(self.button_login)
         self.button_login.setGeometry(QtCore.QRect(160, 250, 75, 30))
@@ -272,7 +273,7 @@ class MyWindow(QMainWindow):
     def DisplayPatient(self):
        # self.setco2.setText(B.PatientName)
         print("Patient Name:", PatientName)
-        self.setco2.setText("sds")
+ 
   
 
     # Display an image, reduce size if required
