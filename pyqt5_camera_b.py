@@ -3,7 +3,7 @@
 # Please credit iosoft.blog if you use the information or software in it
 
 VERSION = "Laparoscope v0.10"
-
+from datetime import datetime
 import sys, time, threading, cv2
 try:
     from PyQt5.QtCore import Qt
@@ -34,7 +34,7 @@ DISP_MSEC   = 1                # Delay between display cycles
 CAP_API     = cv2.CAP_ANY       # API: CAP_ANY or CAP_DSHOW etc...
 EXPOSURE    = 0                 # Zero for automatic exposure
 TEXT_FONT   = QFont("Courier", 10)
-
+#logic = 1
 camera_num  = 1                 # Default camera (first in list)
 image_queue = Queue.Queue()     # Queue to hold images
 capturing   = True              # Flag to indicate capturing
@@ -42,6 +42,7 @@ capturing   = True              # Flag to indicate capturing
 PickName =1
 # Grab images from the camera (separate thread)
 def grab_images(cam_num, queue):
+    global cap
     cap = cv2.VideoCapture(cam_num-1 + CAP_API)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, IMG_SIZE[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, IMG_SIZE[1])
@@ -53,20 +54,22 @@ def grab_images(cam_num, queue):
     while capturing:
         if cap.grab():
             retval, image = cap.retrieve(0)
+            #MyWindow.btnc.clicked.connect(cv2.imwrite(filename='ioi.jpg', img=cap))
             if image is not None and queue.qsize() < 2:
                 queue.put(image)
+
             else:
                 time.sleep(DISP_MSEC / 1000.0)
+               
         
         else:
             print("Error: can't grab camera image")
             break
+     
     cap.release()
 
 #take photo
-def snap (QWidget):
-    cv2.imwrite(filename='saved_img.jpg', img=frame)
-    webcam.release()
+
     
 # Image widget
 class ImageWidget(QWidget):
@@ -93,7 +96,7 @@ class LoginForm(QWidget):
         super().__init__()
         self.setWindowTitle('Patient Form')
         self.resize(400, 250)
-        
+        self.center()
 
         layout = QVBoxLayout()
              
@@ -121,10 +124,15 @@ class LoginForm(QWidget):
              #
         global PatientName
         PatientName= self.lineEdit_username.text()
-        PickName=2
+        
 
                 
           #app.quit()
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     
 # Main window
@@ -135,7 +143,7 @@ class MyWindow(QMainWindow):
     # Create main window
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-
+       # self.
         self.central = QWidget(self)
         self.control_side=QVBoxLayout()
         self.textbox = QTextEdit(self.central)
@@ -144,6 +152,9 @@ class MyWindow(QMainWindow):
         self.text_update.connect(self.append_text)
         sys.stdout = self
         print("Camera number %u" % camera_num)
+        self.logic = 0
+        self.value = 1
+        #LoginForm.center(self)
         
         #PickName.valueChanged.connect(print(PickName))
             #print(PickName)
@@ -250,7 +261,15 @@ class MyWindow(QMainWindow):
         self.btns.setIconSize(size)
         self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         
-        self.btnco2p.clicked.connect(self.DisplayPatient)
+        self.btnc.clicked.connect(self.CaptureClicked)
+        
+    # capturing image
+    def CaptureClicked(self):
+        self.now = datetime.now()
+        self.dt_string = self.now.strftime("%d_%m-%H_%M_%S")
+        self.ImageName=PatientName+"-"+self.dt_string
+        self.logic=2
+        #print(self.ImageName)
         
    
     # Start image capture & display
@@ -270,6 +289,16 @@ class MyWindow(QMainWindow):
             if image is not None and len(image) > 0:
                 img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 self.display_image(img, display, scale)
+                
+                #capturing
+                if (self.logic==2):
+                   self.value=self.value+1
+                   cv2.imwrite('%s.jpg'%self.ImageName,image)
+                   print('your Image have been Saved')
+                   self.logic=1
+                #else:
+                   #print("error printing")
+                
     def DisplayPatient(self):
        # self.setco2.setText(B.PatientName)
         print("Patient Name:", PatientName)
@@ -425,6 +454,7 @@ if __name__ == '__main__':
         
          #.start()
         #Form2.show()
+        layout = QStackedLayout()
         win = MyWindow()
         win.show()
         win.setWindowTitle(VERSION)
