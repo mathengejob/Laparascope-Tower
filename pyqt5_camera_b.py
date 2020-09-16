@@ -4,6 +4,7 @@
 
 VERSION = "Laparoscope v0.10"
 from datetime import datetime
+import numpy as np
 import sys, time, threading, cv2
 try:
     from PyQt5.QtCore import Qt
@@ -270,6 +271,39 @@ class MyWindow(QMainWindow):
         self.ImageName=PatientName+"-"+self.dt_string
         self.logic=2
         #print(self.ImageName)
+        
+        ##recording video
+    def RecordingClicked(self):
+        self.v_logic=3
+        self.filename=self.ImageName+".avi"
+    STD_DIMENSIONS =  {
+    "480p": (640, 480),
+    "720p": (1280, 720),
+    "1080p": (1920, 1080),
+    "4k": (3840, 2160),
+     }
+    # grab resolution dimensions and set video capture to it.
+    def get_dims(cap, res='720p'):
+        width, height = STD_DIMENSIONS["480p"]
+        if res in STD_DIMENSIONS:
+            width,height = STD_DIMENSIONS[res]
+        ## change the current caputre device
+        ## to the resulting resolution
+        change_res(cap, width, height)
+        return width, height
+    VIDEO_TYPE = {
+    'avi': cv2.VideoWriter_fourcc(*'XVID'),
+    #'mp4': cv2.VideoWriter_fourcc(*'H264'),
+    'mp4': cv2.VideoWriter_fourcc(*'XVID'),
+    }
+    def get_video_type(filename):
+        filename, ext = os.path.splitext(filename)
+        if ext in VIDEO_TYPE:
+          return  VIDEO_TYPE[ext]
+        return VIDEO_TYPE['avi']
+
+        
+    
         
    
     # Start image capture & display
