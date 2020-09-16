@@ -58,6 +58,7 @@ PickName =1
 # Grab images from the camera (separate thread)
 def grab_images(cam_num, queue):
     global cap
+    global out
     cap = cv2.VideoCapture(cam_num-1 + CAP_API)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, IMG_SIZE[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, IMG_SIZE[1])
@@ -171,6 +172,7 @@ class MyWindow(QMainWindow):
         self.logic = 0
         self.value = 1
         self.V_Logic=0
+        self.ImageName=""
         
        
         
@@ -281,10 +283,13 @@ class MyWindow(QMainWindow):
         self.btns.setIconSize(size)
         self.Videos.layout.addSpacerItem(self.verticalSpacerb)
         
-        self.btnc.clicked.connect(self.CaptureClicked)
+        self.btnc.clicked.connect(self.CaptureClicked)# Capture Photo trigger
+        self.btnr.clicked.connect(self.RecordingClicked) # Recording Video trigger
+        self.btns.clicked.connect(self.StopClicked)#Stop recording Trigger
         
     # capturing image
     def CaptureClicked(self):
+        
         self.now = datetime.now()
         self.dt_string = self.now.strftime("%d_%m-%H_%M_%S")
         self.ImageName=PatientName+"-"+self.dt_string
