@@ -5,6 +5,7 @@
 VERSION = "Laparoscope v0.10"
 from datetime import datetime
 import numpy as np
+import os
 import sys, time, threading, cv2
 try:
     from PyQt5.QtCore import Qt
@@ -39,7 +40,20 @@ TEXT_FONT   = QFont("Courier", 10)
 camera_num  = 1                 # Default camera (first in list)
 image_queue = Queue.Queue()     # Queue to hold images
 capturing   = True              # Flag to indicate capturing
-
+#video >>>>>>>>>>>>>>>
+FileName='_.avi'
+VIDEO_TYPE = {
+'avi': cv2.VideoWriter_fourcc(*'XVID'),
+#'mp4': cv2.VideoWriter_fourcc(*'H264'),
+'mp4': cv2.VideoWriter_fourcc(*'XVID'),
+}
+STD_DIMENSIONS =  {
+"480p": (640, 480),
+"720p": (1280, 720),
+"1080p": (1920, 1080),
+"4k": (3840, 2160),
+ }
+res = '720p'
 PickName =1
 # Grab images from the camera (separate thread)
 def grab_images(cam_num, queue):
@@ -47,6 +61,7 @@ def grab_images(cam_num, queue):
     cap = cv2.VideoCapture(cam_num-1 + CAP_API)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, IMG_SIZE[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, IMG_SIZE[1])
+    out = cv2.VideoWriter(FileName, MyWindow.get_video_type(FileName), 25, MyWindow.get_dims(cap, res))
     if EXPOSURE:
         cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
         cap.set(cv2.CAP_PROP_EXPOSURE, EXPOSURE)
@@ -156,6 +171,9 @@ class MyWindow(QMainWindow):
         self.logic = 0
         self.value = 1
         self.V_Logic=0
+        
+       
+        
         #LoginForm.center(self)
         
         #PickName.valueChanged.connect(print(PickName))
@@ -280,12 +298,9 @@ class MyWindow(QMainWindow):
     def StopClicked(self):
         self.V_Logic=4
         
-    STD_DIMENSIONS =  {
-    "480p": (640, 480),
-    "720p": (1280, 720),
-    "1080p": (1920, 1080),
-    "4k": (3840, 2160),
-     }
+    def change_res(cap, width, height):
+        cap.set(3, width)
+        cap.set(4, height)
     
     # grab resolution dimensions and set video capture to it.
     def get_dims(cap, res='720p'):
@@ -294,20 +309,16 @@ class MyWindow(QMainWindow):
             width,height = STD_DIMENSIONS[res]
         ## change the current caputre device
         ## to the resulting resolution
-        change_res(cap, width, height)
+        MyWindow.change_res(cap, width, height)
         return width, height
     
-    VIDEO_TYPE = {
-    'avi': cv2.VideoWriter_fourcc(*'XVID'),
-    #'mp4': cv2.VideoWriter_fourcc(*'H264'),
-    'mp4': cv2.VideoWriter_fourcc(*'XVID'),
-    }
-    def get_video_type(self,FileName):
-        self.FileName, ext = os.path.splitext(FileName)
+
+    def get_video_type(FileName):
+        FileName, ext = os.path.splitext(FileName)
         if ext in VIDEO_TYPE:
           return  VIDEO_TYPE[ext]
         return VIDEO_TYPE['avi']
-    #out = cv2.VideoWriter(self.FileName, get_video_type(self.FileName), 25, get_dims(cap, res))
+    
     
 
         
